@@ -39,7 +39,7 @@ getAllData("https://rickandmortyapi.com/api").then(
   ([characters, locations, episodes]) => {
     console.log("\n\r");
     console.log(`Apariciones letra l en locations: ${counter(locations, "l")}`);
-    console.log(`Apariciones Letra e en episodes: ${counter(episodes, "e")}`);
+    console.log(`Apariciones letra e en episodes: ${counter(episodes, "e")}`);
     console.log(
       `Apariciones letra c en characters: ${counter(characters, "c")}`
     );
@@ -60,6 +60,6 @@ getAllData("https://rickandmortyapi.com/api").then(
       console.log("\n\r");
     });
     console.timeEnd("timer");
-    console.log("I love Chipax");
+    console.log("I love Chipax!");
   }
 );

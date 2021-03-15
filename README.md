@@ -4,6 +4,8 @@
 
 # How to start the project:
 
-- Command line: node chipax.js
+[Install node:](https://nodejs.org/es/download/)
+
+- Command line: yarn, node chipax.js
 
 
