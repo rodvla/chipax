@@ -39,44 +39,54 @@ server.get("/challenge", async function (req, res) {
       .map((_, index) => index + 1);
 
   // arrays auxiliares con índices para hacer get múltiples debido a que la paginación no trae todos los resultados
-  const arrayCharacters = auxArray(671);
-  const arrayLocations = auxArray(108);
-  const arrayEpisodes = auxArray(41);
+  const baseUrl = "https://rickandmortyapi.com/api";
+  const getAllCount = await Promise.all([
+    fetch(`${baseUrl}/character`)
+      .then((res) => res.json())
+      .then((data) => data.info.count),
+    fetch(`${baseUrl}/location`)
+      .then((res) => res.json())
+      .then((data) => data.info.count),
+    fetch(`${baseUrl}/episode`)
+      .then((res) => res.json())
+      .then((data) => data.info.count),
+  ]);
+
+  const arrayCharacters = auxArray(getAllCount[0]);
+  const arrayLocations = auxArray(getAllCount[1]);
+  const arrayEpisodes = auxArray(getAllCount[2]);
 
   const getAllData = async (baseUrl) => {
-    const getCharacters = await fetch(
-      `${baseUrl}/character/${arrayCharacters}`
-    );
-    const getLocations = await fetch(`${baseUrl}/location/${arrayLocations}`);
-    const getEpisodes = await fetch(`${baseUrl}/episode/${arrayEpisodes}`);
-    const characters = await getCharacters.json();
-    const locations = await getLocations.json();
-    const episodes = await getEpisodes.json();
+    const getAll = await Promise.all([
+      fetch(`${baseUrl}/character/${arrayCharacters}`).then((res) =>
+        res.json()
+      ),
+      fetch(`${baseUrl}/location/${arrayLocations}`).then((res) => res.json()),
+      fetch(`${baseUrl}/episode/${arrayEpisodes}`).then((res) => res.json()),
+    ]);
 
-    return [characters, locations, episodes];
+    return [getAll[0], getAll[1], getAll[2]];
   };
 
   let matches = [];
   let originLocations = [];
-  await getAllData("https://rickandmortyapi.com/api").then(
-    ([characters, locations, episodes]) => {
-      matches.push(
-        counter(locations, "l"),
-        counter(episodes, "e"),
-        counter(characters, "c")
-      );
+  await getAllData(baseUrl).then(([characters, locations, episodes]) => {
+    matches.push(
+      counter(locations, "l"),
+      counter(episodes, "e"),
+      counter(characters, "c")
+    );
 
-      episodes.forEach((episode) => {
-        const mySet = new Set();
-        episode.characters.forEach((character) => {
-          characterId = character.split("/").pop(); // extraigo id de la url del character
-          characterOrigin = characters[characterId - 1].origin.name;
-          mySet.add(characterOrigin); // para evitar repeticiones guardo en un set
-        });
-        originLocations.push({ id: episode.id, locations: [...mySet] });
+    episodes.forEach((episode) => {
+      const mySet = new Set();
+      episode.characters.forEach((character) => {
+        characterId = character.split("/").pop(); // extraigo id de la url del character
+        characterOrigin = characters[characterId - 1].origin.name;
+        mySet.add(characterOrigin); // para evitar repeticiones guardo en un set
       });
-    }
-  );
+      originLocations.push({ id: episode.id, locations: [...mySet] });
+    });
+  });
   let end = new Date().getTime();
   return res.status(200).json({ matches, originLocations, time: end - start });
 });
